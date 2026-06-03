@@ -6,7 +6,7 @@ function getBaseUrl(): string {
   if (Platform.OS === 'android') {
     return 'http://10.0.2.2:5199';
   }
-  return 'http://localhost:5199';
+  return 'https://azaantime-1.onrender.com'//'http://localhost:5199';
 }
 
 const apiClient = axios.create({
