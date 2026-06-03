@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "REPLACE_WITH_YOUR_PROJECT_NUMBER",
-    "project_id": "REPLACE_WITH_YOUR_FIREBASE_PROJECT_ID",
-    "storage_bucket": "REPLACE_WITH_YOUR_FIREBASE_PROJECT_ID.appspot.com"
+    "project_number": "887177625443",
+    "project_id": "namaz-time-app-bb45e",
+    "storage_bucket": "namaz-time-app-bb45e.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:REPLACE:android:REPLACE",
+        "mobilesdk_app_id": "1:887177625443:android:fd52d4b9953ec7818f9d56",
         "android_client_info": {
-          "package_name": "com.anonymous.NamazTimeApp"
+          "package_name": "com.mfaaiznaved.namaztimeapp"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "REPLACE_WITH_YOUR_API_KEY"
+          "current_key": "AIzaSyCWfH2fIRgnS6wHQ5qc4qw0oA_zlmkuQYQ"
         }
       ],
       "services": {
