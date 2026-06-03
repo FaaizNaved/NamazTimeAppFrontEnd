@@ -1,42 +1,50 @@
-import { Link } from 'expo-router';
-import { StyleSheet } from 'react-native';
-
-import { ThemedText } from '@/components/common/themed-text';
-import { ThemedView } from '@/components/common/themed-view';
+import { useEffect, useState } from 'react';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Colors } from '@/constants/theme';
+import { useAppColorScheme } from '@/hooks/use-app-color-scheme';
+import { storageService } from '@/services/storage-service';
 
 export default function AppIndex() {
-  return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="title">NamazTimeApp</ThemedText>
-      <ThemedText type="default">Choose a section below:</ThemedText>
+  const router = useRouter();
+  const colorScheme = useAppColorScheme();
+  const theme = Colors[colorScheme];
+  const [checking, setChecking] = useState(true);
 
-      <Link href="/home" style={styles.link}>
-        <ThemedText type="defaultSemiBold">Home</ThemedText>
-      </Link>
-      <Link href="/prayer" style={styles.link}>
-        <ThemedText type="defaultSemiBold">Prayer</ThemedText>
-      </Link>
-      <Link href="/settings" style={styles.link}>
-        <ThemedText type="defaultSemiBold">Settings</ThemedText>
-      </Link>
-      <Link href="/profile" style={styles.link}>
-        <ThemedText type="defaultSemiBold">Profile</ThemedText>
-      </Link>
-      <Link href="/auth/login" style={styles.link}>
-        <ThemedText type="defaultSemiBold">Login</ThemedText>
-      </Link>
-    </ThemedView>
-  );
+  useEffect(() => {
+    checkLocation();
+  }, []);
+
+  const checkLocation = async () => {
+    try {
+      const location = await storageService.getLocation();
+      if (location) {
+        router.replace('/(main)/home');
+      } else {
+        router.replace('/location-setup');
+      }
+    } catch {
+      router.replace('/location-setup');
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  if (checking) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
+      </View>
+    );
+  }
+
+  return null;
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    gap: 16,
-    padding: 24,
-  },
-  link: {
-    paddingVertical: 12,
+    alignItems: 'center',
   },
 });
