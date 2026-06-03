@@ -33,8 +33,8 @@
         "expo-notifications",
         {
           "sounds": [
-            "./assets/audio/azan-default.mp3",
-            "./assets/audio/azan-fajr.mp3"
+            "./assets/audio/azan_default.mp3",
+            "./assets/audio/azan_fajr.mp3"
           ]
         }
       ],
