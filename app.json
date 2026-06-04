@@ -29,8 +29,7 @@
     "monochromeImage": "./assets/images/android-icon-monochrome.png"
   },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
-      "googleServicesFile": "./google-services.json"
+      "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
@@ -65,7 +64,8 @@
         {
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-background-fetch"
     ],
     "experiments": {
       "typedRoutes": true,

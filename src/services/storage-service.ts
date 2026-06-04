@@ -4,7 +4,6 @@ const KEYS = {
   LOCATION: 'namaz_location',
   NOTIFICATION_PREFS: 'namaz_notification_prefs',
   THEME_MODE: 'namaz_theme_mode',
-  DEVICE_ID: 'namaz_device_id',
 };
 
 export type ThemeMode = 'light' | 'dark' | 'system';
@@ -64,13 +63,5 @@ export const storageService = {
   getThemeMode: async (): Promise<ThemeMode> => {
     const value = await SecureStore.getItemAsync(KEYS.THEME_MODE);
     return (value as ThemeMode) || 'light';
-  },
-
-  getOrCreateDeviceId: async (): Promise<string> => {
-    const existing = await SecureStore.getItemAsync(KEYS.DEVICE_ID);
-    if (existing) return existing;
-    const id = `dev_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
-    await SecureStore.setItemAsync(KEYS.DEVICE_ID, id);
-    return id;
   },
 };
