@@ -8,8 +8,13 @@ import {
   PrayerNotificationPrefs,
   SavedLocation,
 } from '@/services/storage-service';
+import {
+  ADHAN_CATEGORY_ID,
+  CHANNEL_DEFAULT,
+  CHANNEL_FAJR,
+  setupAdhanNotificationInfrastructure,
+} from '@/services/notification-handler';
 
-/** Push/local notifications are not supported in Expo Go (SDK 53+). */
 export const isExpoGo =
   Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
@@ -48,13 +53,14 @@ const PRAYER_SCHEDULE: {
   label: string;
   timeField: keyof TodayPrayerTimes;
   sound: string;
+  channelId: string;
 }[] = [
-  { key: 'fajr', label: 'Fajr', timeField: 'fajr', sound: 'azan-fajr.mp3' },
-  { key: 'sunrise', label: 'Sunrise', timeField: 'sunrise', sound: 'azan-default.mp3' },
-  { key: 'dhuhr', label: 'Dhuhr', timeField: 'dhuhr', sound: 'azan-default.mp3' },
-  { key: 'asr', label: 'Asr', timeField: 'asr', sound: 'azan-default.mp3' },
-  { key: 'maghrib', label: 'Maghrib', timeField: 'maghrib', sound: 'azan-default.mp3' },
-  { key: 'isha', label: 'Isha', timeField: 'isha', sound: 'azan-default.mp3' },
+  { key: 'fajr', label: 'Fajr', timeField: 'fajr', sound: 'azan_fajr', channelId: CHANNEL_FAJR },
+  { key: 'sunrise', label: 'Sunrise', timeField: 'sunrise', sound: 'azan_default', channelId: CHANNEL_DEFAULT },
+  { key: 'dhuhr', label: 'Dhuhr', timeField: 'dhuhr', sound: 'azan_default', channelId: CHANNEL_DEFAULT },
+  { key: 'asr', label: 'Asr', timeField: 'asr', sound: 'azan_default', channelId: CHANNEL_DEFAULT },
+  { key: 'maghrib', label: 'Maghrib', timeField: 'maghrib', sound: 'azan_default', channelId: CHANNEL_DEFAULT },
+  { key: 'isha', label: 'Isha', timeField: 'isha', sound: 'azan_default', channelId: CHANNEL_DEFAULT },
 ];
 
 function parsePrayerDateTime(timeStr: string): Date | null {
@@ -73,26 +79,13 @@ function parsePrayerDateTime(timeStr: string): Date | null {
   return date;
 }
 
-async function setupNotificationChannels(Notifications: NotificationsModule) {
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('adhan-default', {
-      name: 'Adhan',
-      importance: Notifications.AndroidImportance.MAX,
-      sound: 'azan-default.mp3',
-      vibrationPattern: [0, 250, 250, 250],
-      bypassDnd: true,
-    });
-    await Notifications.setNotificationChannelAsync('adhan-fajr', {
-      name: 'Fajr Adhan',
-      importance: Notifications.AndroidImportance.MAX,
-      sound: 'azan-fajr.mp3',
-      vibrationPattern: [0, 250, 250, 250],
-      bypassDnd: true,
-    });
-  }
-}
-
 export const notificationService = {
+  initialize: async () => {
+    if (isExpoGo) return;
+    await loadNotifications();
+    await setupAdhanNotificationInfrastructure();
+  },
+
   requestPermissions: async (): Promise<boolean> => {
     const Notifications = await loadNotifications();
     if (!Notifications || !Device.isDevice) return false;
@@ -100,7 +93,13 @@ export const notificationService = {
     const { status: existing } = await Notifications.getPermissionsAsync();
     if (existing === 'granted') return true;
 
-    const { status } = await Notifications.requestPermissionsAsync();
+    const { status } = await Notifications.requestPermissionsAsync({
+      ios: {
+        allowAlert: true,
+        allowBadge: false,
+        allowSound: true,
+      },
+    });
     return status === 'granted';
   },
 
@@ -111,7 +110,7 @@ export const notificationService = {
     try {
       const granted = await notificationService.requestPermissions();
       if (!granted) return null;
-      await setupNotificationChannels(Notifications);
+      await setupAdhanNotificationInfrastructure();
       const tokenData = await Notifications.getDevicePushTokenAsync();
       return tokenData.data;
     } catch {
@@ -133,7 +132,7 @@ export const notificationService = {
     if (!Notifications) return;
 
     await notificationService.cancelAllScheduled();
-    await setupNotificationChannels(Notifications);
+    await setupAdhanNotificationInfrastructure();
 
     for (const prayer of PRAYER_SCHEDULE) {
       const pref = prefs[prayer.key];
@@ -145,24 +144,29 @@ export const notificationService = {
       const triggerDate = parsePrayerDateTime(timeValue);
       if (!triggerDate) continue;
 
-      const channelId = prayer.key === 'fajr' ? 'adhan-fajr' : 'adhan-default';
-
       await Notifications.scheduleNotificationAsync({
         identifier: `adhan-${prayer.key}`,
         content: {
           title: `Adhan — ${prayer.label}`,
           body: `It is time for ${prayer.label} prayer.`,
-          sound: prayer.sound,
+          sound: Platform.OS === 'android' ? undefined : prayer.sound,
+          categoryIdentifier: ADHAN_CATEGORY_ID,
+          priority: Notifications.AndroidNotificationPriority.MAX,
           data: {
-            prayer: prayer.key,
-            volume: pref.volume,
             type: 'adhan',
+            prayer: prayer.key,
+            prayerName: prayer.label,
+            sound: prayer.sound,
+            volume: pref.volume,
           },
-          ...(Platform.OS === 'android' ? { channelId } : {}),
+          ...(Platform.OS === 'android'
+            ? { channelId: prayer.channelId }
+            : { sound: `${prayer.sound}.mp3` }),
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.DATE,
           date: triggerDate,
+          channelId: Platform.OS === 'android' ? prayer.channelId : undefined,
         },
       });
     }

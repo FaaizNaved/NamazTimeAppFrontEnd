@@ -25,7 +25,7 @@ const ThemeContext = createContext<ThemeContextType>({
 
 export function AppThemeProvider({ children }: { children: React.ReactNode }) {
   const systemScheme = useSystemColorScheme();
-  const [themeMode, setThemeModeState] = useState<ThemeMode>('system');
+  const [themeMode, setThemeModeState] = useState<ThemeMode>('light');
 
   useEffect(() => {
     storageService.getThemeMode().then(setThemeModeState);
