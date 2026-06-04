@@ -4,8 +4,11 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
+import { useEffect } from 'react';
 import { AppThemeProvider, useAppTheme } from '@/contexts/theme-context';
 import { Colors } from '@/constants/theme';
+import { registerAdhanNotificationHandlers } from '@/services/notification-handler';
+import { notificationService } from '@/services/notification-service';
 
 // Customize navigation themes to match our design system
 const LightTheme = {
@@ -34,6 +37,11 @@ const NightTheme = {
 
 function RootLayoutNav() {
   const { colorScheme } = useAppTheme();
+
+  useEffect(() => {
+    void notificationService.initialize();
+    registerAdhanNotificationHandlers();
+  }, []);
 
   return (
     <NavigationThemeProvider value={colorScheme === 'dark' ? NightTheme : LightTheme}>

@@ -63,7 +63,7 @@ export const storageService = {
 
   getThemeMode: async (): Promise<ThemeMode> => {
     const value = await SecureStore.getItemAsync(KEYS.THEME_MODE);
-    return (value as ThemeMode) || 'system';
+    return (value as ThemeMode) || 'light';
   },
 
   getOrCreateDeviceId: async (): Promise<string> => {
