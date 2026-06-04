@@ -52,4 +52,19 @@ export const prayerTimeApi = {
     if (!model) return null;
     return mapTodayTimes(model);
   },
+
+  getUpcomingPrayerTimes: async (
+    locationCode: string,
+    days = 30
+  ): Promise<TodayPrayerTimes[]> => {
+    const response = await apiClient.get<ApiResponse<Record<string, string>[]>>( 
+      `/api/v1/prayer-times/upcoming/${locationCode}`,
+      { params: { days } }
+    );
+    const model = response.data.model ?? response.data.Model;
+    if (!model || !Array.isArray(model)) return [];
+    return model
+      .map((row) => mapTodayTimes(row))
+      .filter((row): row is TodayPrayerTimes => row !== null);
+  },
 };

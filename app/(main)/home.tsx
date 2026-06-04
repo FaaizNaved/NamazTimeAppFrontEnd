@@ -18,9 +18,8 @@ import {
   SavedLocation,
   PrayerNotificationPrefs,
 } from '@/services/storage-service';
-import { notificationService } from '@/services/notification-service';
+import { performLocalAlarmScheduling } from '@/services/notification-service';
 import { TodayPrayerTimes } from '@/api/prayer-time-api';
-import { deviceApi, toApiPreferences } from '@/api/device-api';
 
 type PrayerKey = 'fajr' | 'sunrise' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
 
@@ -68,7 +67,7 @@ export default function HomeScreen() {
     setPrefs(notifPrefs);
 
     if (loc?.locationCode) {
-      const prayerTimes = await notificationService.refreshPrayerSchedule(loc, notifPrefs);
+      const prayerTimes = await performLocalAlarmScheduling({ force: true });
       setTimes(prayerTimes);
     }
   };
@@ -90,7 +89,7 @@ export default function HomeScreen() {
     loc: SavedLocation | null
   ) => {
     if (!loc?.locationCode) return;
-    const prayerTimes = await notificationService.refreshPrayerSchedule(loc, nextPrefs);
+    const prayerTimes = await performLocalAlarmScheduling({ force: true });
     setTimes(prayerTimes);
   };
 
@@ -102,14 +101,6 @@ export default function HomeScreen() {
     };
     setPrefs(updated);
     await storageService.saveNotificationPrefs(updated);
-    if (location?.locationCode) {
-      const deviceId = await storageService.getOrCreateDeviceId();
-      await deviceApi.updatePreferences(
-        deviceId,
-        toApiPreferences(updated),
-        Object.values(updated).some((p) => p.enabled)
-      );
-    }
     await syncNotifications(updated, location);
   };
 
@@ -121,10 +112,6 @@ export default function HomeScreen() {
     };
     setPrefs(updated);
     await storageService.saveNotificationPrefs(updated);
-    if (location?.locationCode) {
-      const deviceId = await storageService.getOrCreateDeviceId();
-      await deviceApi.updatePreferences(deviceId, toApiPreferences(updated));
-    }
     await syncNotifications(updated, location);
   };
 
@@ -188,7 +175,7 @@ export default function HomeScreen() {
         >
           <Ionicons name="notifications" size={18} color={theme.accent} />
           <Text style={[styles.infoText, { color: theme.accent }]}>
-            Adhan notifications use your selected sounds. Fajr uses the special Fajr azaan.
+            Local adhan alarms — works offline after prayer times are downloaded. Fajr uses special azaan.
           </Text>
         </View>
 

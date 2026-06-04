@@ -7,8 +7,13 @@ import 'react-native-reanimated';
 import { useEffect } from 'react';
 import { AppThemeProvider, useAppTheme } from '@/contexts/theme-context';
 import { Colors } from '@/constants/theme';
+import '@/services/background-scheduler';
 import { registerAdhanNotificationHandlers } from '@/services/notification-handler';
 import { notificationService } from '@/services/notification-service';
+import {
+  registerBackgroundScheduler,
+  runLaunchScheduleRefresh,
+} from '@/services/background-scheduler';
 
 // Customize navigation themes to match our design system
 const LightTheme = {
@@ -39,8 +44,12 @@ function RootLayoutNav() {
   const { colorScheme } = useAppTheme();
 
   useEffect(() => {
-    void notificationService.initialize();
-    registerAdhanNotificationHandlers();
+    void (async () => {
+      await notificationService.initialize();
+      registerAdhanNotificationHandlers();
+      await registerBackgroundScheduler();
+      await runLaunchScheduleRefresh();
+    })();
   }, []);
 
   return (

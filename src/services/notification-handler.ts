@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { playAdhan, stopAdhan } from '@/services/adhan-player';
-import { isExpoGo } from '@/services/notification-service';
+import { isExpoGo } from '@/utils/runtime';
 
 export const ADHAN_CATEGORY_ID = 'adhan-alarm';
 export const STOP_ADHAN_ACTION = 'STOP_ADHAN';
