@@ -47,7 +47,7 @@ async function loadNotifications(): Promise<NotificationsModule | null> {
   return notificationsModule;
 }
 
-type PrayerKey = 'fajr' | 'sunrise' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
+type PrayerKey = 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
 
 const PRAYER_SCHEDULE: {
   key: PrayerKey;
@@ -57,7 +57,6 @@ const PRAYER_SCHEDULE: {
   channelId: string;
 }[] = [
   { key: 'fajr', label: 'Fajr', timeField: 'fajr', sound: 'azan_fajr', channelId: CHANNEL_FAJR },
-  { key: 'sunrise', label: 'Sunrise', timeField: 'sunrise', sound: 'azan_default', channelId: CHANNEL_DEFAULT },
   { key: 'dhuhr', label: 'Dhuhr', timeField: 'dhuhr', sound: 'azan_default', channelId: CHANNEL_DEFAULT },
   { key: 'asr', label: 'Asr', timeField: 'asr', sound: 'azan_default', channelId: CHANNEL_DEFAULT },
   { key: 'maghrib', label: 'Maghrib', timeField: 'maghrib', sound: 'azan_default', channelId: CHANNEL_DEFAULT },
@@ -126,7 +125,29 @@ export const notificationService = {
       if (!timeValue || typeof timeValue !== 'string') continue;
 
       const triggerDate = parseTimeOnDate(timeValue, baseDate);
-      if (!triggerDate || triggerDate.getTime() <= Date.now()) continue;
+      if (!triggerDate) continue;
+
+      // Handle timing: if the trigger time is in the past, we still want to play it
+      // (better late than never) but adjust for same-day prayers only
+      const now = Date.now();
+      const triggerTime = triggerDate.getTime();
+
+      if (triggerTime <= now) {
+        // Trigger time is in the past
+        // Check if it's from today (within 24 hours)
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const todayEnd = new Date(todayStart);
+        todayEnd.setDate(todayStart.getDate() + 1);
+
+        if (triggerTime >= todayStart.getTime() && triggerTime < todayEnd.getTime()) {
+          // It's from today, play it now (or very soon)
+          triggerDate.setTime(now + 1000); // Play 1 second from now
+        } else {
+          // It's from a previous day, skip it (genuinely missed prayer)
+          continue;
+        }
+      }
 
       const dateKey = triggerDate.toISOString().slice(0, 10);
 
@@ -145,7 +166,7 @@ export const notificationService = {
             volume: pref.volume,
           },
           ...(Platform.OS === 'android'
-            ? { channelId: prayer.channelId }
+            ? { channelId: prayer.channelId, ongoing: true }
             : { sound: `${prayer.sound}.mp3` }),
         },
         trigger: {

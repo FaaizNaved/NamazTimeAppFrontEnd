@@ -21,7 +21,7 @@ import {
 import { performLocalAlarmScheduling } from '@/services/notification-service';
 import { TodayPrayerTimes } from '@/api/prayer-time-api';
 
-type PrayerKey = 'fajr' | 'sunrise' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
+type PrayerKey = 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
 
 interface PrayerInfo {
   key: PrayerKey;
@@ -32,7 +32,6 @@ interface PrayerInfo {
 
 const PRAYERS: PrayerInfo[] = [
   { key: 'fajr', name: 'Fajr', icon: 'moon', isFajr: true },
-  { key: 'sunrise', name: 'Sunrise', icon: 'sunny-outline' },
   { key: 'dhuhr', name: 'Dhuhr', icon: 'sunny' },
   { key: 'asr', name: 'Asr', icon: 'partly-sunny' },
   { key: 'maghrib', name: 'Maghrib', icon: 'cloudy-night' },
@@ -41,7 +40,6 @@ const PRAYERS: PrayerInfo[] = [
 
 const FALLBACK_TIMES: Record<PrayerKey, string> = {
   fajr: '--:--',
-  sunrise: '--:--',
   dhuhr: '--:--',
   asr: '--:--',
   maghrib: '--:--',
@@ -118,7 +116,6 @@ export default function HomeScreen() {
   const displayTimes: Record<PrayerKey, string> = times
     ? {
         fajr: times.fajr,
-        sunrise: times.sunrise,
         dhuhr: times.dhuhr,
         asr: times.asr,
         maghrib: times.maghrib,

@@ -17,7 +17,6 @@ export interface SavedLocation {
 
 export interface PrayerNotificationPrefs {
   fajr: { enabled: boolean; volume: number };
-  sunrise: { enabled: boolean; volume: number };
   dhuhr: { enabled: boolean; volume: number };
   asr: { enabled: boolean; volume: number };
   maghrib: { enabled: boolean; volume: number };
@@ -25,12 +24,11 @@ export interface PrayerNotificationPrefs {
 }
 
 const DEFAULT_PREFS: PrayerNotificationPrefs = {
-  fajr: { enabled: true, volume: 80 },
-  sunrise: { enabled: false, volume: 50 },
-  dhuhr: { enabled: true, volume: 70 },
-  asr: { enabled: true, volume: 70 },
-  maghrib: { enabled: true, volume: 70 },
-  isha: { enabled: true, volume: 70 },
+  fajr: { enabled: true, volume: 100 },
+  dhuhr: { enabled: true, volume: 100 },
+  asr: { enabled: true, volume: 100 },
+  maghrib: { enabled: true, volume: 100 },
+  isha: { enabled: true, volume: 100 },
 };
 
 export const storageService = {
